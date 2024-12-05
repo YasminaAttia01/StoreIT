@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./package.json:/app/package.json
+      - ./next.config.ts:/app/next.config.ts
+      - ./package-lock.json:/app/package-lock.json
+      - .:/app
+    environment:
+      - NODE_ENV=development
+      - DB_URL=postgresql://yasmina:yasmina@db:5432/storeit
+    develop:
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: ./next.config.ts
+          action: rebuild
+        - path: ./package-lock.json
+          action: rebuild
+        - path: .
+          target: /app
+          action: sync
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_USER: yasmina
+      POSTGRES_PASSWORD: yasmina
+      POSTGRES_DB: storeit
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
